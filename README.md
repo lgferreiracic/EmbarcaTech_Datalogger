@@ -1,87 +1,86 @@
-# EmbarcaTech_EstacaoMeteorologica
+# EmbarcaTech_Datalogger
 <p align="center">
   <img src="Group 658.png" alt="EmbarcaTech" width="300">
 </p>
 
-## Projeto: Estação Meteorológica com Webserver
+## Projeto: Datalogger MPU6050 com FreeRTOS
 
 ![C](https://img.shields.io/badge/c-%2300599C.svg?style=for-the-badge&logo=c&logoColor=white)
 ![CMake](https://img.shields.io/badge/CMake-%23008FBA.svg?style=for-the-badge&logo=cmake&logoColor=white)
 ![Raspberry Pi](https://img.shields.io/badge/-Raspberry_Pi-C51A4A?style=for-the-badge&logo=Raspberry-Pi)
-![HTML](https://img.shields.io/badge/HTML-%23E34F26.svg?style=for-the-badge&logo=html5&logoColor=white)
-![CSS](https://img.shields.io/badge/CSS-1572B6?style=for-the-badge&logo=css3&logoColor=fff)
-![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
 ![FreeRTOS](https://img.shields.io/badge/FreeRTOS-%23000000.svg?style=for-the-badge&logo=freertos&logoColor=white)
 ![GitHub](https://img.shields.io/badge/github-%23121011.svg?style=for-the-badge&logo=github&logoColor=white)
 ![Windows 11](https://img.shields.io/badge/Windows%2011-%230079d5.svg?style=for-the-badge&logo=Windows%2011&logoColor=white)
 
 ## Descrição do Projeto
 
-Este projeto implementa uma **estação meteorológica inteligente** utilizando o microcontrolador **Raspberry Pi Pico W** com **FreeRTOS** para gerenciamento de tarefas em tempo real.
+Este projeto implementa um **datalogger inteligente** utilizando o microcontrolador **Raspberry Pi Pico W** com **FreeRTOS** para gerenciamento de tarefas em tempo real.
 
-O sistema coleta dados ambientais através de sensores **BMP280** (temperatura, pressão e altitude) e **AHT20** (temperatura e umidade), exibindo as informações em um **display OLED SSD1306** e disponibilizando-as através de um **servidor web embarcado** com interface responsiva.
+O sistema coleta dados de movimento através do sensor **MPU6050** (acelerômetro e giroscópio), exibindo as informações em um **display OLED SSD1306** e armazenando-as em **cartão SD** no formato CSV.
 
-A arquitetura utiliza **múltiplas tarefas FreeRTOS** para operação concorrente, **filas** para comunicação entre tarefas, **semáforos** para sincronização e **timers** para controle de alertas, garantindo operação estável e eficiente.
+A arquitetura utiliza **múltiplas tarefas FreeRTOS** para operação concorrente, **filas** para comunicação entre tarefas, **semáforos** para sincronização, garantindo operação estável e eficiente durante a coleta e armazenamento de dados.
 
 ## Componentes Utilizados
 
-- **Microcontrolador Raspberry Pi Pico W (RP2040)**: Controle central com Wi-Fi integrado
-- **Sensor BMP280 (I2C)**: Medição de temperatura, pressão atmosférica e altitude
-- **Sensor AHT20 (I2C)**: Medição de temperatura e umidade relativa
-- **Display SSD1306 OLED (I2C)**: GPIOs 14 e 15 - Exibição local dos dados
-- **LED RGB**: GPIOs 11, 12 e 13 - Indicação visual de status
-- **Botões A e B**: GPIOs 5 e 6 - Controle local
-- **Botão do Joystick**: GPIO 22 - Alternância de display
-- **Matriz de LEDs WS2812B**: GPIO 7 - Alertas visuais
-- **Buzzers (1 e 2)**: GPIOs 10 e 21 - Alertas sonoros
+- **Microcontrolador Raspberry Pi Pico W (RP2040)**: Controle central
+- **Sensor MPU6050 (I2C)**: Medição de aceleração e velocidade angular nos 3 eixos
+- **Display SSD1306 OLED (I2C)**: GPIOs 14 e 15 - Exibição local dos dados e status
+- **Cartão SD (SPI)**: Armazenamento dos dados coletados
+- **LED RGB**: GPIOs 11, 12 e 13 - Indicação visual de status do sistema
+- **Botões A e B**: GPIOs 5 e 6 - Controle local (montagem SD e captura)
+- **Botão do Joystick**: GPIO 22 - Reset do sistema
+- **Buzzers (1 e 2)**: GPIOs 10 e 21 - Feedback sonoro
 
 ## Ambiente de Desenvolvimento
 
 - **VS Code** com extensão da Raspberry Pi Pico
 - **Linguagem C** utilizando o **Pico SDK**
 - **FreeRTOS** para gerenciamento de tarefas em tempo real
-- **Biblioteca LwIP** para comunicação TCP/IP
-- **HTML/CSS/JavaScript** para interface web responsiva
-- **Chart.js** para gráficos em tempo real
+- **FatFS** para sistema de arquivos do cartão SD
+- **CMake** para build system
 
 ## Arquitetura do Sistema
 
 ### Tarefas FreeRTOS
-- **vSensorTask**: Coleta dados dos sensores BMP280 e AHT20
-- **vAlertTask**: Gerencia alertas sonoros e visuais baseados em thresholds
-- **vDisplayTask**: Atualiza display OLED com dados meteorológicos
-- **vWebServerTask**: Servidor HTTP para interface web
+- **vSensorTask**: Coleta dados do sensor MPU6050 a cada 100ms
+- **vSDCardTask**: Gerencia montagem/desmontagem do cartão SD
+- **vCaptureTask**: Controla captura e gravação de dados no arquivo CSV
+- **vReadTask**: Lê e exibe conteúdo dos arquivos salvos
 
 ### Comunicação
-- **Filas**: Compartilhamento de dados entre tarefas
-- **Semáforos**: Proteção de recursos compartilhados
-- **Timers**: Controle de silenciamento de alertas (60 segundos)
+- **Filas**: Compartilhamento de dados de sensores entre tarefas
+- **Semáforos Binários**: Sincronização de botões e controle de acesso
+- **Estados**: Enum para controle do estado de captura
 
 ## Funcionalidades
 
-### 📊 Monitoramento em Tempo Real
-- Temperatura (BMP280 e AHT20)
-- Umidade relativa do ar
-- Altitude calculada
-- Atualização a cada 1 segundo
+### 📊 Coleta de Dados em Tempo Real
+- Aceleração nos eixos X, Y, Z (em g)
+- Velocidade angular nos eixos X, Y, Z (em °/s)
+- Atualização a cada 100ms
+- Armazenamento de até 128 amostras por arquivo
 
-### 🖥️ Interface Web Responsiva
-- Dashboard com gráficos em tempo real (Chart.js)
-- Visualização de até 10 pontos históricos por sensor
-- Status de conexão em tempo real
-- Controle remoto de alertas
-- Design responsivo para mobile e desktop
+### 💾 Sistema de Armazenamento
+- Gravação em cartão SD no formato CSV
+- Arquivo: `mpu6050.csv`
+- Formato: `sample, accel_x, accel_y, accel_z, gyro_x, gyro_y, gyro_z`
+- Controle de montagem/desmontagem segura do SD
 
-### ⚠️ Sistema de Alertas Inteligente
-- Thresholds configuráveis para cada sensor
-- Alertas visuais (LED RGB + Matriz WS2812B)
-- Alertas sonoros (Buzzers)
-- Silenciamento por 60 segundos (botão físico ou web)
-- Reativação automática após período de silêncio
+### 🖥️ Interface Local
+- Display OLED mostra status do sistema
+- Indicação visual do estado: SD montado/desmontado, capturando, lendo
+- LEDs RGB para feedback visual:
+  - **Branco**: SD desmontado
+  - **Amarelo**: Montando/inicializando
+  - **Verde**: SD montado e pronto
+  - **Vermelho**: Capturando dados
+  - **Magenta**: Erro no sistema
 
 ### 🎛️ Controles Locais
-- **Botão A**: Reset do sistema
-- **Botão B**: Silenciar alarmes
+- **Botão A**: Montar/desmontar cartão SD
+- **Botão B**: Iniciar/parar captura de dados
+- **Botão Joystick**: Reset do sistema
+- **Buzzers**: Feedback sonoro para sucesso/erro
 
 ## Guia de Instalação
 
@@ -93,62 +92,62 @@ A arquitetura utiliza **múltiplas tarefas FreeRTOS** para operação concorrent
 2. **Configure o ambiente**
    - Instale VS Code com extensão Raspberry Pi Pico
    - Configure Pico SDK e toolchain
+   - Instale FreeRTOS Kernel
 
-3. **Configure Wi-Fi**
-   - Edite `WIFI_SSID` e `WIFI_PASSWORD` em `lib/web_server.h`
-
-4. **Compile o projeto**
+3. **Compile o projeto**
    - Use Ctrl+Shift+P → "Raspberry Pi Pico: Compile Project"
 
-5. **Flash no dispositivo**
+4. **Flash no dispositivo**
    - Conecte Pico W com botão BOOTSEL pressionado
    - Copie arquivo `.uf2` gerado para o dispositivo
 
 ## Guia de Uso
 
-### Acesso Web
-1. Conecte o Pico W à rede Wi-Fi
-2. Observe o IP exibido no terminal serial
-3. Acesse `http://[IP_DO_DISPOSITIVO]` no navegador
-4. Monitore dados em tempo real e controle alertas
+### Operação Básica
+1. **Montar SD**: Pressione Botão A para montar o cartão SD
+2. **Iniciar Captura**: Pressione Botão B para começar a gravar dados
+3. **Parar Captura**: Pressione Botão B novamente para finalizar
+4. **Ler Dados**: Pressione Botão do Joystick para exibir arquivo no terminal
+5. **Reset**: Mantenha pressionado o Botão do Joystick
 
-### Thresholds de Alerta (Configuráveis)
-- **Temperatura**: > valor definido em `ALERT_THRESHOLD_TEMPERATURE`
-- **Umidade**: > valor definido em `ALERT_THRESHOLD_HUMIDITY`  
-- **Pressão**: > valor definido em `ALERT_THRESHOLD_PRESSURE`
+### Estados do Sistema
+- **CAPTURE_IDLE**: Sistema pronto, aguardando comandos
+- **CAPTURE_RUNNING**: Coletando e gravando dados (128 amostras)
+- **CAPTURE_COMPLETED**: Captura finalizada com sucesso
 
-### Display OLED
-- **Modo Normal**: Dados meteorológicos + status do servidor
-- **Modo Alerta**: Dados + indicação visual de alarme
-
-## Testes e Validação
-
-- ✅ Leitura precisa dos sensores I2C
-- ✅ Comunicação Wi-Fi estável
-- ✅ Interface web responsiva
-- ✅ Sistema de alertas funcionando
-- ✅ Sincronização entre tarefas FreeRTOS
-- ✅ Controles locais e remotos
-- ✅ Gráficos em tempo real
-- ✅ Silenciamento temporizado de alertas
+### Indicadores Visuais
+- **Display**: Mostra status atual e informações do sistema
+- **LED RGB**: Indica estado operacional
+- **Buzzers**: Confirmação sonora de ações
 
 ## Estrutura do Projeto
 
 ```
-├── Estacao.c              # Arquivo principal
+├── Datalogger.c           # Arquivo principal
+├── hw_config.c            # Configuração de hardware
 ├── lib/
 │   ├── my_tasks.c         # Implementação das tarefas FreeRTOS
 │   ├── my_tasks.h         # Headers das tarefas
-│   ├── web_server.c       # Servidor HTTP embarcado
-│   ├── web_server.h       # Headers do servidor web
-│   ├── sensors.c          # Interface com sensores
-│   ├── sensors.h          # Headers dos sensores
-│   ├── bmp280.c/h         # Driver sensor BMP280
-│   ├── aht20.c/h          # Driver sensor AHT20
+│   ├── mpu6050.c/h        # Driver sensor MPU6050
+│   ├── sdcard.c/h         # Interface com cartão SD
+│   ├── sensors.c/h        # Interface com sensores
 │   ├── ssd1306.c/h        # Driver display OLED
-│   └── [outros drivers]   # LEDs, buzzers, botões, etc.
+│   ├── button.c/h         # Controle de botões
+│   ├── led_rgb.c/h        # Controle LED RGB
+│   ├── buzzer.c/h         # Controle buzzers
+│   └── FatFs_SPI/         # Sistema de arquivos FatFS
 └── CMakeLists.txt         # Configuração de build
 ```
+
+## Testes e Validação
+
+- ✅ Leitura precisa do sensor MPU6050
+- ✅ Gravação estável em cartão SD
+- ✅ Sistema de tarefas FreeRTOS funcionando
+- ✅ Controles locais responsivos
+- ✅ Indicadores visuais e sonoros
+- ✅ Gerenciamento seguro de arquivos
+- ✅ Coleta de 128 amostras por sessão
 
 ## Desenvolvedor
 

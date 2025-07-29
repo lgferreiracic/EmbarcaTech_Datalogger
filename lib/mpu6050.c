@@ -60,3 +60,4 @@ void init_mpu6050(){
     bi_decl(bi_2pins_with_func(I2C_SDA, I2C_SCL, GPIO_FUNC_I2C));
     mpu6050_reset();
 }
+

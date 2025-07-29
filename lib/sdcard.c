@@ -248,162 +248,22 @@ void read_file(const char *filename)
 {
     FIL file;
     FRESULT res = f_open(&file, filename, FA_READ);
-    if (res != FR_OK)
-    {
+    if (res != FR_OK){
         printf("[ERRO] Não foi possível abrir o arquivo para leitura. Verifique se o Cartão está montado ou se o arquivo existe.\n");
-
         return;
     }
-    char buffer[128];
+    char buffer[1024];
     UINT br;
     printf("Conteúdo do arquivo %s:\n", filename);
     while (f_read(&file, buffer, sizeof(buffer) - 1, &br) == FR_OK && br > 0)
     {
+        blue();
         buffer[br] = '\0';
         printf("%s", buffer);
+        sleep_ms(50);
+        black();
     }
     f_close(&file);
     printf("\nLeitura do arquivo %s concluída.\n\n", filename);
 }
 
-void run_help()
-{
-    printf("\nComandos disponíveis:\n\n");
-    printf("Digite 'a' para montar o cartão SD\n");
-    printf("Digite 'b' para desmontar o cartão SD\n");
-    printf("Digite 'c' para listar arquivos\n");
-    printf("Digite 'd' para mostrar conteúdo do arquivo\n");
-    printf("Digite 'e' para obter espaço livre no cartão SD\n");
-    printf("Digite 'f' para capturar dados do ADC e salvar no arquivo\n");
-    printf("Digite 'g' para formatar o cartão SD\n");
-    printf("Digite 'h' para exibir os comandos disponíveis\n");
-    printf("\nEscolha o comando:  ");
-}
-
-cmd_def_t cmds[] = {
-    {"setrtc", run_setrtc, "setrtc <DD> <MM> <YY> <hh> <mm> <ss>: Set Real Time Clock"},
-    {"format", run_format, "format [<drive#:>]: Formata o cartão SD"},
-    {"mount", run_mount, "mount [<drive#:>]: Monta o cartão SD"},
-    {"unmount", run_unmount, "unmount <drive#:>: Desmonta o cartão SD"},
-    {"getfree", run_getfree, "getfree [<drive#:>]: Espaço livre"},
-    {"ls", run_ls, "ls: Lista arquivos"},
-    {"cat", run_cat, "cat <filename>: Mostra conteúdo do arquivo"},
-    {"help", run_help, "help: Mostra comandos disponíveis"}};
-
-void process_stdio(int cRxedChar)
-{
-    char cmd[256];
-    size_t ix;
-
-    if (!isprint(cRxedChar) && !isspace(cRxedChar) && '\r' != cRxedChar &&
-        '\b' != cRxedChar && cRxedChar != (char)127)
-        return;
-    printf("%c", cRxedChar); // echo
-    stdio_flush();
-    if (cRxedChar == '\r')
-    {
-        printf("%c", '\n');
-        stdio_flush();
-
-        if (!strnlen(cmd, sizeof cmd))
-        {
-            printf("> ");
-            stdio_flush();
-            return;
-        }
-        char *cmdn = strtok(cmd, " ");
-        if (cmdn)
-        {
-            size_t i;
-            for (i = 0; i < count_of(cmds); ++i)
-            {
-                if (0 == strcmp(cmds[i].command, cmdn))
-                {
-                    (*cmds[i].function)();
-                    break;
-                }
-            }
-            if (count_of(cmds) == i)
-                printf("Command \"%s\" not found\n", cmdn);
-        }
-        ix = 0;
-        memset(cmd, 0, sizeof cmd);
-        printf("\n> ");
-        stdio_flush();
-    }
-    else
-    {
-        if (cRxedChar == '\b' || cRxedChar == (char)127)
-        {
-            if (ix > 0)
-            {
-                ix--;
-                cmd[ix] = '\0';
-            }
-        }
-        else
-        {
-            if (ix < sizeof cmd - 1)
-            {
-                cmd[ix] = cRxedChar;
-                ix++;
-            }
-        }
-    }
-}
-
-void get_user_input()
-{
-    int cRxedChar = getchar_timeout_us(0);
-    if (PICO_ERROR_TIMEOUT != cRxedChar)
-        process_stdio(cRxedChar);
-
-    if (cRxedChar == 'a') // Monta o SD card se pressionar 'a'
-    {
-        printf("\nMontando o SD...\n");
-        run_mount();
-        printf("\nEscolha o comando (h = help):  ");
-    }
-    if (cRxedChar == 'b') // Desmonta o SD card se pressionar 'b'
-    {
-        printf("\nDesmontando o SD. Aguarde...\n");
-        run_unmount();
-        printf("\nEscolha o comando (h = help):  ");
-    }
-    if (cRxedChar == 'c') // Lista diretórios e os arquivos se pressionar 'c'
-    {
-        printf("\nListagem de arquivos no cartão SD.\n");
-        run_ls();
-        printf("\nListagem concluída.\n");
-        printf("\nEscolha o comando (h = help):  ");
-    }
-    if (cRxedChar == 'd') // Exibe o conteúdo do arquivo se pressionar 'd'
-    {
-        read_file(filename);
-        printf("Escolha o comando (h = help):  ");
-    }
-    if (cRxedChar == 'e') // Obtém o espaço livre no SD card se pressionar 'e'
-    {
-        printf("\nObtendo espaço livre no SD.\n\n");
-        run_getfree();
-        printf("\nEspaço livre obtido.\n");
-        printf("\nEscolha o comando (h = help):  ");
-    }
-    if (cRxedChar == 'f') // Captura dados do ADC e salva no arquivo se pressionar 'f'
-    {
-        capture_adc_data_and_save();
-        printf("\nEscolha o comando (h = help):  ");
-    }
-    if (cRxedChar == 'g') // Formata o SD card se pressionar 'g'
-    {
-        printf("\nProcesso de formatação do SD iniciado. Aguarde...\n");
-        run_format();
-        printf("\nFormatação concluída.\n\n");
-        printf("\nEscolha o comando (h = help):  ");
-    }
-    if (cRxedChar == 'h') // Exibe os comandos disponíveis se pressionar 'h'
-    {
-        run_help();
-    }
-    sleep_ms(500);
-}

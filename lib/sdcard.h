@@ -19,6 +19,8 @@
 #include "rtc.h"
 #include "sd_card.h"
 
+#include "lib/led_rgb.h"
+
 typedef void (*p_fn_t)();
 typedef struct
 {
@@ -38,8 +40,5 @@ void run_ls();
 void run_cat();
 void capture_adc_data_and_save();
 void read_file(const char *filename);
-void run_help();
-void process_stdio(int cRxedChar);
-void get_user_input();
 
 #endif
