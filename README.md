@@ -1,6 +1,6 @@
 # EmbarcaTech_Datalogger
 <p align="center">
-  <img src="Group 658.png" alt="EmbarcaTech" width="300">
+  <img src="EmbarcaTechLogo.png" alt="EmbarcaTech" width="300">
 </p>
 
 ## Projeto: Datalogger MPU6050 com FreeRTOS
