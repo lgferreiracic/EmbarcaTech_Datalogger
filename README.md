@@ -70,11 +70,10 @@ A arquitetura utiliza **múltiplas tarefas FreeRTOS** para operação concorrent
 - Display OLED mostra status do sistema
 - Indicação visual do estado: SD montado/desmontado, capturando, lendo
 - LEDs RGB para feedback visual:
-  - **Branco**: SD desmontado
   - **Amarelo**: Montando/inicializando
   - **Verde**: SD montado e pronto
   - **Vermelho**: Capturando dados
-  - **Magenta**: Erro no sistema
+  - **Roxo**: Erro no sistema
 
 ### 🎛️ Controles Locais
 - **Botão A**: Montar/desmontar cartão SD
@@ -111,9 +110,9 @@ A arquitetura utiliza **múltiplas tarefas FreeRTOS** para operação concorrent
 5. **Reset**: Mantenha pressionado o Botão do Joystick
 
 ### Estados do Sistema
-- **CAPTURE_IDLE**: Sistema pronto, aguardando comandos
+- **IDLE**: Sistema pronto, aguardando comandos
 - **CAPTURE_RUNNING**: Coletando e gravando dados (128 amostras)
-- **CAPTURE_COMPLETED**: Captura finalizada com sucesso
+- **READ_RUNNING**: Realizando a leitura do arquivo e printando no serial
 
 ### Indicadores Visuais
 - **Display**: Mostra status atual e informações do sistema
