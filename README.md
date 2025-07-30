@@ -155,4 +155,4 @@ A arquitetura utiliza **múltiplas tarefas FreeRTOS** para operação concorrent
 
 ## Vídeo da Solução
 
-[Link do YouTube](https://www.youtube.com/watch?v=1kkM6SFJDTk)
+[Link do YouTube](https://www.youtube.com/watch?v=CvqbRkgbDFQ)

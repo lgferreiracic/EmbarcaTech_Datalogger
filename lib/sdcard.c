@@ -6,6 +6,7 @@ absolute_time_t next_log_time;
 
 static char filename[20] = "mpu6050.csv";   //Nome do arquivo CSV para armazenar os dados do MPU6050
 
+// Função para obter o cartão SD pelo nome
 sd_card_t *sd_get_by_name(const char *const name)
 {
     for (size_t i = 0; i < sd_get_num(); ++i)
@@ -14,6 +15,8 @@ sd_card_t *sd_get_by_name(const char *const name)
     DBG_PRINTF("%s: unknown name %s\n", __func__, name);
     return NULL;
 }
+
+// Função para obter o sistema de arquivos pelo nome
 FATFS *sd_get_fs_by_name(const char *name)
 {
     for (size_t i = 0; i < sd_get_num(); ++i)
@@ -23,6 +26,7 @@ FATFS *sd_get_fs_by_name(const char *name)
     return NULL;
 }
 
+// Função para configurar a data e hora do RTC
 void run_setrtc()
 {
     const char *dateStr = strtok(NULL, " ");
@@ -84,6 +88,7 @@ void run_setrtc()
     rtc_set_datetime(&t);
 }
 
+// Função para formatar o cartão SD
 void run_format()
 {
     const char *arg1 = strtok(NULL, " ");
@@ -100,6 +105,8 @@ void run_format()
     if (FR_OK != fr)
         printf("f_mkfs error: %s (%d)\n", FRESULT_str(fr), fr);
 }
+
+// Função para montar o cartão SD
 void run_mount()
 {
     const char *arg1 = strtok(NULL, " ");
@@ -122,6 +129,8 @@ void run_mount()
     pSD->mounted = true;
     printf("Processo de montagem do SD ( %s ) concluído\n", pSD->pcName);
 }
+
+// Função para desmontar o cartão SD
 void run_unmount()
 {
     const char *arg1 = strtok(NULL, " ");
@@ -145,6 +154,8 @@ void run_unmount()
     pSD->m_Status |= STA_NOINIT; // in case medium is removed
     printf("SD ( %s ) desmontado\n", pSD->pcName);
 }
+
+// Função para obter o espaço livre no cartão SD
 void run_getfree()
 {
     const char *arg1 = strtok(NULL, " ");
@@ -167,6 +178,8 @@ void run_getfree()
     fre_sect = fre_clust * p_fs->csize;
     printf("%10lu KiB total drive space.\n%10lu KiB available.\n", tot_sect / 2, fre_sect / 2);
 }
+
+// Função para listar os arquivos no cartão SD
 void run_ls()
 {
     const char *arg1 = strtok(NULL, " ");
@@ -218,6 +231,8 @@ void run_ls()
     }
     f_closedir(&dj);
 }
+
+// Função para exibir o conteúdo de um arquivo
 void run_cat()
 {
     char *arg1 = strtok(NULL, " ");

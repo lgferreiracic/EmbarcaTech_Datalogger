@@ -67,7 +67,7 @@ void init_hardware() {
     stdio_flush();
 
     white();   //Liga o led branco para indicar que o cartao esta desmontado
-    status_display(&ssd, "SD status:", "Nao montado");  //Imprime no display que o cartao nao esta montado
+    status_display(&ssd, "SD status:", "Desmontado");  //Imprime no display que o cartao Desesta montado
 }
 
 //Função para alternar a montagem/desmontagem do SD card
@@ -75,8 +75,9 @@ void toggle_sd_card() {
     if (sd_mounted) {
         printf("Desmontando o SD. Aguarde...\n");
         run_unmount();
-        status_display(&ssd, "Status SD:", "Desmontado");  //Imprime no display que o cartao nao esta montado
+        status_display(&ssd, "Status SD:", "Desmontado");  //Imprime no display que o cartao Desesta montado
         printf("SD desmontado\n");
+        black();
         sd_mounted = false;
     } else {
         yellow();
@@ -92,8 +93,8 @@ void toggle_sd_card() {
 void toggle_capture() {
     if (capture_state == IDLE) {
         if(!sd_mounted){
-            printf("Erro: Cartao SD nao montado\n");
-            status_display(&ssd, "Erro:", "SD nao montado");
+            printf("Erro: Cartao SD Desmontado\n");
+            status_display(&ssd, "Erro:", "SD Desmontado");
             return;
         }
 
@@ -126,7 +127,6 @@ void toggle_capture() {
     }
 }
 
-
 // Função de interrupção para gerenciar os botões
 void irq_handler(uint gpio, uint32_t events){
         if (debounce(&last_button_press_time)){
@@ -154,6 +154,7 @@ void vSensorTask(void *params) {
     }
 }
 
+// Tarefa para gerenciar o cartão SD
 void vSDCardTask(void *params) {
     while (1) {
         if (xSemaphoreTake(xSDCardBinarySemaphore, portMAX_DELAY) == pdTRUE) {
@@ -176,6 +177,7 @@ void vSDCardTask(void *params) {
     }
 }
 
+// Tarefa para capturar os dados do sensor
 void vCaptureTask(void *params) {
     while (1) {
         if (xSemaphoreTake(xCaptureBinarySemaphore, 0) == pdTRUE) {
@@ -237,11 +239,12 @@ void vCaptureTask(void *params) {
     }
 }
 
+// Tarefa para ler os dados do arquivo
 void vReadTask(void *params) {
     while (1) {
         if (xSemaphoreTake(xReadBinarySemaphore, portMAX_DELAY) == pdTRUE) {
             if(!sd_mounted){
-                printf("Erro: Cartao SD nao montado\n");
+                printf("Erro: Cartao SD Desmontado\n");
                 status_display(&ssd, "Erro:", "Desmontado");
                 continue;
             }
